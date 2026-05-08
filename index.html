@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nur's Runner Game</title>
+    <style>
+        body { margin: 0; overflow: hidden; font-family: Arial, sans-serif; background-color: #f0f0f0; }
+        #game-container { width: 100vw; height: 100vh; position: relative; background: #87CEEB; display: none; }
+        #ground { width: 100%; height: 50px; background: #8B4513; position: absolute; bottom: 0; }
+        
+        /* ক্যারেক্টার স্টাইল */
+        .character { width: 50px; height: 80px; position: absolute; bottom: 50px; left: 50px; border-radius: 5px; text-align: center; color: white; font-weight: bold; }
+        #player-name { position: absolute; top: -25px; width: 100%; color: black; font-size: 12px; }
+        
+        /* ক্যারেক্টার কালার */
+        .nur { background: #0000FF; } /* Blue for Nur Islam */
+        .anika { background: #FF69B4; } /* Pink for Anika */
+        .sayan { background: #00FF00; height: 50px; } /* Green & Short for Sayan */
+
+        /* বাধা (Obstacle) */
+        .obstacle { width: 40px; height: 40px; background: red; position: absolute; bottom: 50px; right: -50px; }
+
+        /* মেনু স্টাইল */
+        #menu { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #2c3e50; color: white; }
+        .btn-group { margin-top: 20px; }
+        button { padding: 15px 30px; margin: 10px; cursor: pointer; font-size: 18px; border: none; border-radius: 5px; }
+        .score { position: absolute; top: 20px; left: 20px; font-size: 24px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div id="menu">
+        <h1>Select Your Character</h1>
+        <div class="btn-group">
+            <button onclick="startGame('Nur Islam', 'nur')">Nur Islam (Male)</button>
+            <button onclick="startGame('Anika', 'anika')">Anika (Female)</button>
+            <button onclick="startGame('Sayan', 'sayan')">Sayan (Kid)</button>
+        </div>
+    </div>
+
+    <div id="game-container">
+        <div class="score">Score: <span id="scoreVal">0</span></div>
+        <div id="player" class="character">
+            <div id="player-name"></div>
+        </div>
+        <div id="ground"></div>
+    </div>
+
+    <script>
+        const player = document.getElementById('player');
+        const playerNameTag = document.getElementById('player-name');
+        const gameContainer = document.getElementById('game-container');
+        const menu = document.getElementById('menu');
+        const scoreVal = document.getElementById('scoreVal');
+
+        let isJumping = false;
+        let score = 0;
+        let gameActive = false;
+
+        function startGame(name, className) {
+            menu.style.display = 'none';
+            gameContainer.style.display = 'block';
+            player.className = 'character ' + className;
+            playerNameTag.innerText = name;
+            gameActive = true;
+            score = 0;
+            createObstacle();
+        }
+
+        // লাফ দেওয়ার সিস্টেম
+        document.addEventListener('keydown', function(event) {
+            if (event.code === 'Space' || event.code === 'ArrowUp') {
+                jump();
+            }
+        });
+
+        // মোবাইলে টাচ করলে লাফ দিবে
+        document.addEventListener('touchstart', jump);
+
+        function jump() {
+            if (isJumping || !gameActive) return;
+            isJumping = true;
+            let position = 50;
+            
+            let upInterval = setInterval(() => {
+                if (position >= 200) {
+                    clearInterval(upInterval);
+                    let downInterval = setInterval(() => {
+                        if (position <= 50) {
+                            clearInterval(downInterval);
+                            isJumping = false;
+                        }
+                        position -= 5;
+                        player.style.bottom = position + 'px';
+                    }, 20);
+                }
+                position += 5;
+                player.style.bottom = position + 'px';
+            }, 20);
+        }
+
+        function createObstacle() {
+            if (!gameActive) return;
+            
+            const obstacle = document.createElement('div');
+            obstacle.classList.add('obstacle');
+            gameContainer.appendChild(obstacle);
+            
+            let obstaclePos = window.innerWidth;
+            
+            let moveInterval = setInterval(() => {
+                if (!gameActive) {
+                    clearInterval(moveInterval);
+                    obstacle.remove();
+                    return;
+                }
+
+                obstaclePos -= 7; // বাধার গতি
+                obstacle.style.left = obstaclePos + 'px';
+
+                // সংঘর্ষ (Collision) চেক
+                let playerRect = player.getBoundingClientRect();
+                let obstacleRect = obstacle.getBoundingClientRect();
+
+                if (
+                    playerRect.right > obstacleRect.left &&
+                    playerRect.left < obstacleRect.right &&
+                    playerRect.bottom > obstacleRect.top
+                ) {
+                    alert("Game Over! Score: " + score);
+                    gameActive = false;
+                    location.reload(); // গেম রিস্টার্ট
+                }
+
+                if (obstaclePos < -50) {
+                    clearInterval(moveInterval);
+                    obstacle.remove();
+                    score++;
+                    scoreVal.innerText = score;
+                    createObstacle(); // নতুন বাধা আসবে
+                }
+            }, 20);
+        }
+    </script>
+</body>
+</html>
