@@ -3,145 +3,212 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nur's Runner Game</title>
+    <title>Nur's Game with Buttons</title>
     <style>
-        body { margin: 0; overflow: hidden; font-family: Arial, sans-serif; background-color: #f0f0f0; }
-        #game-container { width: 100vw; height: 100vh; position: relative; background: #87CEEB; display: none; }
-        #ground { width: 100%; height: 50px; background: #8B4513; position: absolute; bottom: 0; }
-        
-        /* ক্যারেক্টার স্টাইল */
-        .character { width: 50px; height: 80px; position: absolute; bottom: 50px; left: 50px; border-radius: 5px; text-align: center; color: white; font-weight: bold; }
-        #player-name { position: absolute; top: -25px; width: 100%; color: black; font-size: 12px; }
-        
-        /* ক্যারেক্টার কালার */
-        .nur { background: #0000FF; } /* Blue for Nur Islam */
-        .anika { background: #FF69B4; } /* Pink for Anika */
-        .sayan { background: #00FF00; height: 50px; } /* Green & Short for Sayan */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            overflow: hidden; 
+            font-family: 'Segoe UI', sans-serif; 
+            background: #87CEEB; 
+            transition: background 5s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
-        /* বাধা (Obstacle) */
-        .obstacle { width: 40px; height: 40px; background: red; position: absolute; bottom: 50px; right: -50px; }
+        /* Game Container */
+        #game-container {
+            width: 100%;
+            height: 350px;
+            position: relative;
+            margin-top: 20px;
+            overflow: hidden;
+            border-bottom: 15px solid #2ecc71;
+            background: linear-gradient(#87CEEB, #b1e4f7);
+        }
 
-        /* মেনু স্টাইল */
-        #menu { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #2c3e50; color: white; }
-        .btn-group { margin-top: 20px; }
-        button { padding: 15px 30px; margin: 10px; cursor: pointer; font-size: 18px; border: none; border-radius: 5px; }
-        .score { position: absolute; top: 20px; left: 20px; font-size: 24px; font-weight: bold; }
+        /* Score & Celestial */
+        #score { font-size: 28px; margin-top: 10px; font-weight: bold; color: #2c3e50; }
+        #celestial {
+            position: absolute; top: 30px; right: 80px;
+            width: 50px; height: 50px; background: #f1c40f;
+            border-radius: 50%; box-shadow: 0 0 20px #f1c40f; transition: 5s;
+        }
+
+        /* Clouds & Birds */
+        .cloud {
+            position: absolute; width: 80px; height: 30px; background: #fff;
+            border-radius: 50px; opacity: 0.8; animation: cloudMove 25s linear infinite;
+        }
+        .bird {
+            position: absolute; width: 15px; height: 8px; border-top: 2px solid #333;
+            border-radius: 50% 50% 0 0; animation: birdFly 12s linear infinite;
+        }
+
+        @keyframes cloudMove { from { left: -100px; } to { left: 100%; } }
+        @keyframes birdFly { from { right: -50px; } to { right: 100%; } }
+
+        /* Character Nur */
+        #player { width: 40px; height: 60px; position: absolute; bottom: 0; left: 50px; z-index: 5; }
+        .head { width: 22px; height: 22px; background: #FFDBAC; border-radius: 50%; position: absolute; top: 0; left: 9px; }
+        .hair { width: 24px; height: 10px; background: #000; border-radius: 10px 10px 0 0; position: absolute; top: -2px; left: 8px; }
+        .body { 
+            width: 22px; height: 26px; background: #3498db; position: absolute; top: 22px; left: 9px; 
+            border-radius: 4px; display: flex; justify-content: center; align-items: center; 
+            color: white; font-size: 9px; font-weight: bold; 
+        }
+        .leg { width: 7px; height: 15px; background: #34495e; position: absolute; bottom: 0; }
+        .leg1 { left: 9px; animation: walk 0.4s infinite; }
+        .leg2 { left: 24px; animation: walk 0.4s infinite reverse; }
+
+        @keyframes walk { 0%, 100% { transform: rotate(-25deg); } 50% { transform: rotate(25deg); } }
+        .jump { animation: jump-anim 0.5s linear; }
+        @keyframes jump-anim { 0%, 100% { bottom: 0; } 50% { bottom: 130px; } }
+
+        /* Tree */
+        #tree { width: 15px; height: 25px; background: #8B4513; position: absolute; bottom: 0; right: -100px; }
+        #tree::before { content: ''; width: 30px; height: 30px; background: #27ae60; border-radius: 50%; position: absolute; top: -20px; left: -8px; }
+
+        /* Control Buttons */
+        .controls {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .btn {
+            width: 70px;
+            height: 70px;
+            background: #fff;
+            border: 3px solid #34495e;
+            border-radius: 50%;
+            font-size: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            box-shadow: 0 4px #95a5a6;
+        }
+        .btn:active { transform: translateY(4px); box-shadow: 0 0px #95a5a6; background: #ecf0f1; }
+
+        #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 20; }
+        #startBtn { padding: 15px 40px; font-size: 24px; cursor: pointer; background: #f1c40f; border: none; border-radius: 50px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div id="menu">
-        <h1>Select Your Character</h1>
-        <div class="btn-group">
-            <button onclick="startGame('Nur Islam', 'nur')">Nur Islam (Male)</button>
-            <button onclick="startGame('Anika', 'anika')">Anika (Female)</button>
-            <button onclick="startGame('Sayan', 'sayan')">Sayan (Kid)</button>
-        </div>
-    </div>
+    <div id="score">Score: 0</div>
 
     <div id="game-container">
-        <div class="score">Score: <span id="scoreVal">0</span></div>
-        <div id="player" class="character">
-            <div id="player-name"></div>
+        <div id="celestial"></div>
+        <div class="cloud" style="top: 20px; animation-duration: 30s;"></div>
+        <div class="bird" style="top: 80px; animation-duration: 15s;"></div>
+
+        <div id="overlay">
+            <button id="startBtn" onclick="startGame(event)">START GAME 🏃‍♂️</button>
         </div>
-        <div id="ground"></div>
+
+        <div id="player">
+            <div class="hair"></div>
+            <div class="head"></div>
+            <div class="body">Nur</div>
+            <div class="leg leg1"></div>
+            <div class="leg leg2"></div>
+        </div>
+
+        <div id="tree"></div>
+    </div>
+
+    <div class="controls">
+        <div class="btn" onclick="triggerJump()">⬆️</div>
+        <div class="btn" onclick="triggerJump()">⬇️</div>
     </div>
 
     <script>
-        const player = document.getElementById('player');
-        const playerNameTag = document.getElementById('player-name');
-        const gameContainer = document.getElementById('game-container');
-        const menu = document.getElementById('menu');
-        const scoreVal = document.getElementById('scoreVal');
+        const player = document.getElementById("player");
+        const tree = document.getElementById("tree");
+        const scoreBoard = document.getElementById("score");
+        const overlay = document.getElementById("overlay");
+        const celestial = document.getElementById("celestial");
 
-        let isJumping = false;
         let score = 0;
-        let gameActive = false;
+        let speed = 6;
+        let isAlive = false;
+        let isNight = false;
 
-        function startGame(name, className) {
-            menu.style.display = 'none';
-            gameContainer.style.display = 'block';
-            player.className = 'character ' + className;
-            playerNameTag.innerText = name;
-            gameActive = true;
-            score = 0;
-            createObstacle();
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playTone(freq, type, duration) {
+            const osc = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            osc.type = type; osc.frequency.value = freq;
+            g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+            osc.connect(g); g.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + duration);
         }
 
-        // লাফ দেওয়ার সিস্টেম
-        document.addEventListener('keydown', function(event) {
-            if (event.code === 'Space' || event.code === 'ArrowUp') {
-                jump();
+        function startGame(e) {
+            e.stopPropagation();
+            isAlive = true; score = 0; speed = 6;
+            scoreBoard.innerText = "Score: 0";
+            overlay.style.display = "none";
+            requestAnimationFrame(update);
+            setInterval(cycleDayNight, 15000); 
+        }
+
+        function cycleDayNight() {
+            if(!isAlive) return;
+            isNight = !isNight;
+            if(isNight) {
+                document.body.style.background = "#2c3e50";
+                celestial.style.background = "#ecf0f1";
+                celestial.style.boxShadow = "0 0 20px #ecf0f1";
+            } else {
+                document.body.style.background = "#87CEEB";
+                celestial.style.background = "#f1c40f";
+                celestial.style.boxShadow = "0 0 20px #f1c40f";
             }
+        }
+
+        function triggerJump() {
+            if (isAlive && !player.classList.contains("jump")) {
+                player.classList.add("jump");
+                playTone(400, 'square', 0.1);
+                setTimeout(() => player.classList.remove("jump"), 500);
+            }
+        }
+
+        // কীবোর্ড কন্ট্রোল (Space বা Up Arrow)
+        window.addEventListener("keydown", (e) => {
+            if(e.code === "Space" || e.code === "ArrowUp") triggerJump();
         });
 
-        // মোবাইলে টাচ করলে লাফ দিবে
-        document.addEventListener('touchstart', jump);
+        function update() {
+            if (!isAlive) return;
 
-        function jump() {
-            if (isJumping || !gameActive) return;
-            isJumping = true;
-            let position = 50;
-            
-            let upInterval = setInterval(() => {
-                if (position >= 200) {
-                    clearInterval(upInterval);
-                    let downInterval = setInterval(() => {
-                        if (position <= 50) {
-                            clearInterval(downInterval);
-                            isJumping = false;
-                        }
-                        position -= 5;
-                        player.style.bottom = position + 'px';
-                    }, 20);
-                }
-                position += 5;
-                player.style.bottom = position + 'px';
-            }, 20);
-        }
+            let treeRight = parseInt(window.getComputedStyle(tree).getPropertyValue("right"));
+            tree.style.right = (treeRight + speed) + "px";
 
-        function createObstacle() {
-            if (!gameActive) return;
-            
-            const obstacle = document.createElement('div');
-            obstacle.classList.add('obstacle');
-            gameContainer.appendChild(obstacle);
-            
-            let obstaclePos = window.innerWidth;
-            
-            let moveInterval = setInterval(() => {
-                if (!gameActive) {
-                    clearInterval(moveInterval);
-                    obstacle.remove();
-                    return;
-                }
+            if (treeRight > window.innerWidth) {
+                tree.style.right = "-50px";
+                score++;
+                scoreBoard.innerText = "Score: " + score;
+                speed += 0.4;
+            }
 
-                obstaclePos -= 7; // বাধার গতি
-                obstacle.style.left = obstaclePos + 'px';
+            let playerBottom = parseInt(window.getComputedStyle(player).getPropertyValue("bottom"));
+            let treeRect = tree.getBoundingClientRect();
+            let playerRect = player.getBoundingClientRect();
 
-                // সংঘর্ষ (Collision) চেক
-                let playerRect = player.getBoundingClientRect();
-                let obstacleRect = obstacle.getBoundingClientRect();
-
-                if (
-                    playerRect.right > obstacleRect.left &&
-                    playerRect.left < obstacleRect.right &&
-                    playerRect.bottom > obstacleRect.top
-                ) {
-                    alert("Game Over! Score: " + score);
-                    gameActive = false;
-                    location.reload(); // গেম রিস্টার্ট
-                }
-
-                if (obstaclePos < -50) {
-                    clearInterval(moveInterval);
-                    obstacle.remove();
-                    score++;
-                    scoreVal.innerText = score;
-                    createObstacle(); // নতুন বাধা আসবে
-                }
-            }, 20);
+            if (treeRect.left < playerRect.right - 10 && treeRect.right > playerRect.left + 10 && playerBottom < 30) {
+                isAlive = false;
+                playTone(100, 'sawtooth', 0.5);
+                alert("গেম ওভার, নূর! স্কোর: " + score);
+                location.reload();
+            }
+            requestAnimationFrame(update);
         }
     </script>
 </body>
 </html>
+
